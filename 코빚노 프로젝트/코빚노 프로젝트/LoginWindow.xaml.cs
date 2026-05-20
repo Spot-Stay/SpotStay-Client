@@ -1,40 +1,112 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace 코빚노_프로젝트
 {
     public partial class LoginWindow : Window
     {
-        public string LoginUserId { get; private set; }
-        public bool RememberLogin { get; private set; }
+        public string LoginUserId { get; set; }
 
         public LoginWindow()
         {
             InitializeComponent();
         }
 
-        private void BtnDoLogin_Click(object sender, RoutedEventArgs e)
+        private async void BtnDoLogin_Click(object sender, RoutedEventArgs e)
         {
-            string id = TxtId.Text.Trim();
-            string pw = TxtPw.Password.Trim();
-
-            if (id.Length == 0)
+            try
             {
-                MessageBox.Show("아이디를 입력하세요.");
-                TxtId.Focus();
+                string id = TxtId.Text;
+                string pw = TxtPw.Password;
+
+                bool result = await AuthApi.LoginAsync(id, pw);
+
+                if (result)
+                {
+                    LoginUserId = id;
+
+                    DialogResult = true;
+
+                    Close();
+                }
+                else
+                {
+                    MessageBox.Show("아이디 또는 비밀번호가 틀렸습니다.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "로그인 오류");
+            }
+        }
+
+        private void BtnWindowMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            WindowState = WindowState.Minimized;
+        }
+
+        private void BtnWindowMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (WindowState == WindowState.Maximized)
+            {
+                WindowState = WindowState.Normal;
+            }
+            else
+            {
+                WindowState = WindowState.Maximized;
+            }
+        }
+
+        private void BtnWindowClose_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            try
+            {
+                DialogResult = false;
+            }
+            catch
+            {
+                Close();
+            }
+        }
+
+        private void CustomTitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is Button)
+            {
                 return;
             }
 
-            if (pw.Length == 0)
+            if (e.ClickCount == 2)
             {
-                MessageBox.Show("비밀번호를 입력하세요.");
-                TxtPw.Focus();
+                if (WindowState == WindowState.Maximized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+                else
+                {
+                    WindowState = WindowState.Maximized;
+                }
+
                 return;
             }
 
-            LoginUserId = id;
-            RememberLogin = ChkRememberLogin.IsChecked == true;
-
-            DialogResult = true;
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                try
+                {
+                    DragMove();
+                }
+                catch
+                {
+                }
+            }
         }
     }
 }

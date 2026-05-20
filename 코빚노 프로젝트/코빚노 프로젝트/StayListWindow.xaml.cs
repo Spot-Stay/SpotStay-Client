@@ -2,44 +2,48 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Security.Policy;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using System.Windows.Input;
 
 namespace 코빚노_프로젝트
 {
     public partial class StayListWindow : Window
     {
         private TourSpotItem _tour;
-        private List<StayItem> _stays;
+        private List<StayItem> _originalStayList = new List<StayItem>();
+        private List<StayItem> _displayStayList = new List<StayItem>();
         private StayItem _selectedStay;
 
         private bool _isMapReady = false;
+        private string _sortMode = "기본순";
+
+
 
         public StayListWindow(TourSpotItem tour, List<StayItem> stays)
         {
             InitializeComponent();
 
             _tour = tour;
-            _stays = stays ?? new List<StayItem>();
-
-            InitHeader();
-            InitList();
+            _originalStayList = stays ?? new List<StayItem>();
 
             Loaded += StayListWindow_Loaded;
+
+            InitHeader();
+            ApplyStaySort(false);
         }
 
         private async void StayListWindow_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadStayMapAsync();
 
-            if (_stays.Count > 0)
+            if (_displayStayList.Count > 0)
             {
                 StayFullList.SelectedIndex = 0;
-                UpdatePopup(_stays[0]);
+                UpdatePopup(_displayStayList[0]);
                 await FocusStayOnMapAsync(0);
             }
         }
@@ -47,16 +51,16 @@ namespace 코빚노_프로젝트
         private void InitHeader()
         {
             if (_tour == null)
+            {
+                TxtOriginBadge.Text = "🏛 관광지";
+                TxtStayCount.Text = "0";
+                TxtStaySub.Text = "선택 관광지 기준";
                 return;
+            }
 
-            TxtOriginBadge.Text = _tour.Icon + " " + _tour.Name;
-            TxtStayCount.Text = _stays.Count.ToString();
+            TxtOriginBadge.Text = "🏛 " + _tour.Name;
+            TxtStayCount.Text = _originalStayList.Count.ToString();
             TxtStaySub.Text = _tour.Name + " 기준";
-        }
-
-        private void InitList()
-        {
-            StayFullList.ItemsSource = _stays;
         }
 
         private async void StayFullList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -77,6 +81,171 @@ namespace 코빚노_프로젝트
             _selectedStay = stay;
         }
 
+        #region 정렬
+
+        private void BtnSortDistance_Click(object sender, RoutedEventArgs e)
+        {
+            _sortMode = "거리순";
+            SetSortButtonStyle(BtnSortDistance);
+            ApplyStaySort(true);
+        }
+
+        private void BtnSortRating_Click(object sender, RoutedEventArgs e)
+        {
+            _sortMode = "별점순";
+            SetSortButtonStyle(BtnSortRating);
+            ApplyStaySort(true);
+        }
+
+        private void BtnSortPrice_Click(object sender, RoutedEventArgs e)
+        {
+            _sortMode = "가격순";
+            SetSortButtonStyle(BtnSortPrice);
+            ApplyStaySort(true);
+        }
+
+        private void SetSortButtonStyle(Button selectedButton)
+        {
+            BtnSortDistance.Style = (Style)FindResource("SortChipButton");
+            BtnSortRating.Style = (Style)FindResource("SortChipButton");
+            BtnSortPrice.Style = (Style)FindResource("SortChipButton");
+
+            selectedButton.Style = (Style)FindResource("SortChipOnButton");
+        }
+
+        private void ApplyStaySort(bool reloadMap)
+        {
+            if (_originalStayList == null)
+                _originalStayList = new List<StayItem>();
+
+            List<StayItem> sorted;
+
+            if (_sortMode == "별점순")
+            {
+                sorted = _originalStayList
+                    .OrderByDescending(x => GetStayRatingValue(x))
+                    .ToList();
+            }
+            else if (_sortMode == "가격순")
+            {
+                sorted = _originalStayList
+                    .OrderBy(x => GetStayPriceValue(x))
+                    .ToList();
+            }
+            else
+            {
+                sorted = _originalStayList
+                    .OrderBy(x => GetStayDistanceValue(x))
+                    .ToList();
+            }
+
+            for (int i = 0; i < sorted.Count; i++)
+            {
+                sorted[i].No = i + 1;
+            }
+
+            _displayStayList = sorted;
+
+            TxtStayCount.Text = _displayStayList.Count.ToString();
+
+            StayFullList.ItemsSource = null;
+            StayFullList.ItemsSource = _displayStayList;
+
+            if (_displayStayList.Count > 0)
+            {
+                StayFullList.SelectedIndex = 0;
+                _selectedStay = _displayStayList[0];
+            }
+
+            if (reloadMap && IsLoaded)
+            {
+                _ = ReloadMapAfterSortAsync();
+            }
+        }
+
+        private async Task ReloadMapAfterSortAsync()
+        {
+            _isMapReady = false;
+
+            await LoadStayMapAsync();
+
+            if (_displayStayList.Count > 0)
+            {
+                StayFullList.SelectedIndex = 0;
+                await FocusStayOnMapAsync(0);
+            }
+        }
+
+        private double GetStayDistanceValue(StayItem item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.Distance))
+                return double.MaxValue;
+
+            string text = item.Distance
+                .Replace("🚗", "")
+                .Replace("km", "")
+                .Trim();
+
+            double value;
+
+            if (double.TryParse(
+                text,
+                NumberStyles.Any,
+                CultureInfo.InvariantCulture,
+                out value))
+            {
+                return value;
+            }
+
+            return double.MaxValue;
+        }
+
+        private double GetStayRatingValue(StayItem item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.Rating))
+                return 0;
+
+            string text = item.Rating
+                .Replace("★", "")
+                .Trim();
+
+            double value;
+
+            if (double.TryParse(
+                text,
+                NumberStyles.Any,
+                CultureInfo.InvariantCulture,
+                out value))
+            {
+                return value;
+            }
+
+            return 0;
+        }
+
+        private int GetStayPriceValue(StayItem item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.Price))
+                return int.MaxValue;
+
+            string text = item.Price
+                .Replace("원~", "")
+                .Replace("원", "")
+                .Replace(",", "")
+                .Trim();
+
+            int value;
+
+            if (int.TryParse(text, out value))
+                return value;
+
+            return int.MaxValue;
+        }
+
+        #endregion
+
+        #region 지도
+
         private async Task LoadStayMapAsync()
         {
             if (_tour == null)
@@ -93,7 +262,6 @@ namespace 코빚노_프로젝트
 
                 StayMapWebView.NavigateToString(html);
 
-                // HTML 안의 focusStay 함수가 생길 때까지 잠깐 기다림
                 for (int i = 0; i < 30; i++)
                 {
                     string ready = await StayMapWebView.ExecuteScriptAsync("typeof window.focusStay === 'function'");
@@ -125,9 +293,9 @@ namespace 코빚노_프로젝트
 
             StringBuilder stayArray = new StringBuilder();
 
-            for (int i = 0; i < _stays.Count; i++)
+            for (int i = 0; i < _displayStayList.Count; i++)
             {
-                StayItem s = _stays[i];
+                StayItem s = _displayStayList[i];
 
                 if (s.MapX == 0 || s.MapY == 0)
                     continue;
@@ -173,7 +341,7 @@ namespace 코빚노_프로젝트
             box-shadow: 0 2px 8px rgba(0,0,0,0.18);
         }}
 
-      .stayInfo {{
+        .stayInfo {{
             width: 340px;
             padding: 14px 16px;
             background: white;
@@ -231,7 +399,7 @@ namespace 코빚노_프로젝트
 </head>
 <body>
     <div id='map'></div>
-    <div class='mapBadge'>반경 <strong>20km</strong> · 숙소 <strong>{_stays.Count}</strong>개</div>
+    <div class='mapBadge'>반경 <strong>20km</strong> · 숙소 <strong>{_displayStayList.Count}</strong>개</div>
 
     <script>
         var tour = {{
@@ -261,7 +429,6 @@ namespace 코빚노_프로젝트
 
             var bounds = new kakao.maps.LatLngBounds();
 
-            // 관광지 기준 마커
             tourMarker = new kakao.maps.Marker({{
                 map: map,
                 position: tourPosition,
@@ -269,13 +436,15 @@ namespace 코빚노_프로젝트
             }});
 
             var tourInfo = new kakao.maps.InfoWindow({{
-                content: '<div class=""tourInfo"">📍 ' + tour.name + '</div>'
+                position: tourPosition,
+                content: '<div class=""tourInfo"">📍 ' + tour.name + '</div>',
+                xAnchor: 0.5,
+                yAnchor: 2.0
             }});
 
             tourInfo.open(map, tourMarker);
             bounds.extend(tourPosition);
 
-            // 반경 원
             var circle = new kakao.maps.Circle({{
                 center: tourPosition,
                 radius: 20000,
@@ -296,7 +465,6 @@ namespace 코빚노_프로젝트
                 }}
             }}
 
-            // 숙소 마커들
             stays.forEach(function(s) {{
                 var pos = new kakao.maps.LatLng(s.mapY, s.mapX);
                 bounds.extend(pos);
@@ -309,12 +477,12 @@ namespace 코빚노_프로젝트
 
                 var info = new kakao.maps.InfoWindow({{
                     content:
-        '<div class=""stayInfo"">' +
-            '<div class=""stayName"">🏨 ' + s.name + '</div>' +
-            '<div class=""staySub"">📍 ' + s.address + '</div>' +
-            '<div class=""staySub"">🚗 관광지에서 ' + s.distance + '</div>' +
-            '<div class=""stayPrice"">💰 ' + s.price + '</div>' +
-        '</div>'
+                        '<div class=""stayInfo"">' +
+                            '<div class=""stayName"">🏨 ' + s.name + '</div>' +
+                            '<div class=""staySub"">📍 ' + s.address + '</div>' +
+                            '<div class=""staySub"">🚗 관광지에서 ' + s.distance + '</div>' +
+                            '<div class=""stayPrice"">💰 ' + s.price + '</div>' +
+                        '</div>'
                 }});
 
                 kakao.maps.event.addListener(marker, 'click', function() {{
@@ -326,9 +494,7 @@ namespace 코빚노_프로젝트
                 stayInfos[s.index] = info;
             }});
 
-            if (!bounds.isEmpty()) {{
-                map.setBounds(bounds);
-            }}
+            map.setBounds(bounds);
 
             window.focusStay = function(index) {{
                 var marker = stayMarkers[index];
@@ -378,6 +544,10 @@ namespace 코빚노_프로젝트
                 .Replace("\n", " ");
         }
 
+        #endregion
+
+        #region 예약 / 뒤로가기 / 상단바
+
         private void BtnBookStay_Click(object sender, RoutedEventArgs e)
         {
             StayItem stay = null;
@@ -415,5 +585,56 @@ namespace 코빚노_프로젝트
         {
             Close();
         }
+
+        private void BtnWindowMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            WindowState = WindowState.Minimized;
+        }
+
+        private void BtnWindowMaximize_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (WindowState == WindowState.Maximized)
+                WindowState = WindowState.Normal;
+            else
+                WindowState = WindowState.Maximized;
+        }
+
+        private void BtnWindowClose_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            Close();
+        }
+
+        private void CustomTitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OriginalSource is Button)
+                return;
+
+            if (e.ClickCount == 2)
+            {
+                if (WindowState == WindowState.Maximized)
+                    WindowState = WindowState.Normal;
+                else
+                    WindowState = WindowState.Maximized;
+
+                return;
+            }
+
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                try
+                {
+                    DragMove();
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        #endregion
     }
 }

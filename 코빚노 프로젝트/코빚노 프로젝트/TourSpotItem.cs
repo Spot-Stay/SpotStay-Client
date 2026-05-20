@@ -26,5 +26,10 @@ namespace 코빚노_프로젝트
 
         public double MapX { get; set; }
         public double MapY { get; set; }
+        public bool IsFavorite { get; set; }
+        public int DistanceMeters { get; set; }
+        public string DistanceText { get; set; }
+        public string Link { get; set; }
+
     }
 }

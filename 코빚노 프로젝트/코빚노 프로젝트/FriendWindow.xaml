@@ -1,0 +1,513 @@
+﻿<Window x:Class="코빚노_프로젝트.FriendWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="관광지 공유 채팅"
+        Width="420"
+        Height="680"
+        WindowStartupLocation="Manual"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        FontFamily="Malgun Gothic">
+
+    <Window.Resources>
+
+        <SolidColorBrush x:Key="MainYellow" Color="#FFCC00"/>
+        <SolidColorBrush x:Key="MainYellowDark" Color="#FFCC00"/>
+        <SolidColorBrush x:Key="TextBlack" Color="#1A1A1A"/>
+        <SolidColorBrush x:Key="LightGray" Color="#F5F5F5"/>
+
+        <Style x:Key="HeaderIconButton" TargetType="Button">
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ToolButton" TargetType="Button">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="#555555"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="7"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFFDE6"/>
+                                <Setter Property="Foreground" Value="#B8860B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="YellowToolButton" TargetType="Button" BasedOn="{StaticResource ToolButton}">
+            <Setter Property="Background" Value="#FFCC00"/>
+            <Setter Property="Foreground" Value="#1A1A1A"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style x:Key="SendButton" TargetType="Button">
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Background" Value="#FFCC00"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFCC00"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ChatInputBox" TargetType="TextBox">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="13,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#1A1A1A"/>
+            <Setter Property="Background" Value="#FAFAFA"/>
+            <Setter Property="BorderBrush" Value="#E8E8E8"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#FFCC00"/>
+                                <Setter Property="Background" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ShareItemButton" TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFFDE6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <Border Background="White"
+            CornerRadius="14"
+            BorderBrush="#E5E5E5"
+            BorderThickness="1"
+            ClipToBounds="True">
+
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="28"
+                              ShadowDepth="0"
+                              Opacity="0.16"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="96"/>
+            </Grid.RowDefinitions>
+
+            <!-- 헤더 -->
+            <Border Grid.Row="0"
+                    Background="#FFCC00"
+                    MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid Margin="16,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <Border Width="32"
+                                Height="32"
+                                Background="White"
+                                CornerRadius="8"
+                                Margin="0,0,9,0">
+                            <TextBlock Text="💬"
+                                       FontSize="15"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="관광지 공유 채팅"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       Foreground="#1A1A1A"/>
+                            <TextBlock x:Name="TxtRoomSub"
+                                       Text="여행 그룹"
+                                       FontSize="11"
+                                       Foreground="#555555"
+                                       Margin="0,1,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,8,0">
+                            <Ellipse Width="8"
+                                     Height="8"
+                                     Fill="#2ECC71"
+                                     Stroke="#FFCC00"
+                                     StrokeThickness="2"
+                                     Margin="0,0,5,0"/>
+                            <TextBlock x:Name="TxtParticipantCount"
+           Text="0명"
+           FontSize="12"
+           FontWeight="SemiBold"
+           Foreground="#333333"
+           VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Button Content="✕"
+                                Style="{StaticResource HeaderIconButton}"
+                                Click="BtnClose_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 메시지 영역 -->
+            <ScrollViewer x:Name="MsgScrollViewer"
+                          Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          Background="White">
+                <StackPanel x:Name="MessagePanel"
+                            Margin="14,14,14,8"/>
+            </ScrollViewer>
+
+            <!-- 관광지 공유 팝업 -->
+            <Border x:Name="SharePopup"
+                    Grid.RowSpan="3"
+                    VerticalAlignment="Bottom"
+                    Margin="12,0,12,104"
+                    Background="White"
+                    BorderBrush="#E8E8E8"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Visibility="Collapsed"
+                    Panel.ZIndex="99">
+
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="20"
+                                      ShadowDepth="0"
+                                      Opacity="0.15"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="42"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Background="#FFCC00"
+                            CornerRadius="12,12,0,0">
+                        <Grid Margin="14,0">
+                            <TextBlock Text="📍 관광지 공유하기"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="#1A1A1A"
+                                       VerticalAlignment="Center"/>
+
+                            <Button Content="✕"
+                                    HorizontalAlignment="Right"
+                                    Width="28"
+                                    Height="28"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Click="BtnToggleSharePopup_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1"
+                                  MaxHeight="230"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <Button Style="{StaticResource ShareItemButton}"
+                                    Tag="경복궁|서울 종로구 사직로 161|문화유적|4.8|2.1만|#DDEEFF|🏛️"
+                                    Click="BtnSharePlace_Click">
+                                <Grid Margin="14,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="42"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="56"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Width="34"
+                                            Height="34"
+                                            Background="#DDEEFF"
+                                            CornerRadius="7">
+                                        <TextBlock Text="🏛️"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="경복궁"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#1A1A1A"/>
+                                        <TextBlock Text="서울 종로구 · 문화유적"
+                                                   FontSize="11"
+                                                   Foreground="#888888"/>
+                                    </StackPanel>
+
+                                    <Border Grid.Column="2"
+                                            Background="#FFCC00"
+                                            CornerRadius="5"
+                                            Padding="8,4"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="공유"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                            <Button Style="{StaticResource ShareItemButton}"
+                                    Tag="북촌 한옥마을|서울 종로구 계동길 일대|골목·거리|4.6|8.3천|#FFF8CC|🏘️"
+                                    Click="BtnSharePlace_Click">
+                                <Grid Margin="14,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="42"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="56"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Width="34"
+                                            Height="34"
+                                            Background="#FFF8CC"
+                                            CornerRadius="7">
+                                        <TextBlock Text="🏘️"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="북촌 한옥마을"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#1A1A1A"/>
+                                        <TextBlock Text="서울 종로구 · 골목·거리"
+                                                   FontSize="11"
+                                                   Foreground="#888888"/>
+                                    </StackPanel>
+
+                                    <Border Grid.Column="2"
+                                            Background="#FFCC00"
+                                            CornerRadius="5"
+                                            Padding="8,4"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="공유"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                            <Button Style="{StaticResource ShareItemButton}"
+                                    Tag="남산 서울타워|서울 용산구 남산공원길 105|전망·야경|4.7|4.5만|#FCE8E8|⭐"
+                                    Click="BtnSharePlace_Click">
+                                <Grid Margin="14,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="42"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="56"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Width="34"
+                                            Height="34"
+                                            Background="#FCE8E8"
+                                            CornerRadius="7">
+                                        <TextBlock Text="⭐"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="남산 서울타워"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#1A1A1A"/>
+                                        <TextBlock Text="서울 용산구 · 전망·야경"
+                                                   FontSize="11"
+                                                   Foreground="#888888"/>
+                                    </StackPanel>
+
+                                    <Border Grid.Column="2"
+                                            Background="#FFCC00"
+                                            CornerRadius="5"
+                                            Padding="8,4"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="공유"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                            <Button Style="{StaticResource ShareItemButton}"
+                                    Tag="창덕궁|서울 종로구 율곡로 99|문화유적|4.9|1.2만|#E8F5E9|🏯"
+                                    Click="BtnSharePlace_Click">
+                                <Grid Margin="14,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="42"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="56"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Width="34"
+                                            Height="34"
+                                            Background="#E8F5E9"
+                                            CornerRadius="7">
+                                        <TextBlock Text="🏯"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="창덕궁"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#1A1A1A"/>
+                                        <TextBlock Text="서울 종로구 · 문화유적"
+                                                   FontSize="11"
+                                                   Foreground="#888888"/>
+                                    </StackPanel>
+
+                                    <Border Grid.Column="2"
+                                            Background="#FFCC00"
+                                            CornerRadius="5"
+                                            Padding="8,4"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="공유"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Button>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- 입력 영역 -->
+            <Border Grid.Row="2"
+                    Background="White"
+                    BorderBrush="#F0F0F0"
+                    BorderThickness="0,1,0,0"
+                    Padding="12,8,12,10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="32"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal"/>
+
+                    <Grid Grid.Row="1"
+                          Margin="0,7,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="7"/>
+                            <ColumnDefinition Width="38"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="TxtMessage"
+                                 Style="{StaticResource ChatInputBox}"
+                                 KeyDown="TxtMessage_KeyDown"/>
+
+                        <Button Grid.Column="2"
+                                Content="➤"
+                                Style="{StaticResource SendButton}"
+                                Click="BtnSend_Click"/>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

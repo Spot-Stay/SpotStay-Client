@@ -5,7 +5,12 @@
         Title="주변 숙소"
         Width="1050"
         Height="700"
-        WindowStartupLocation="CenterOwner"
+        MinWidth="1000"
+        MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="CanResize"
         Background="#F7F8FA"
         FontFamily="Malgun Gothic">
 
@@ -84,6 +89,46 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- 커스텀 상단바 버튼 -->
+        <Style x:Key="WindowTopButton" TargetType="Button">
+            <Setter Property="Width" Value="42"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#444444"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EEEEEE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CloseWindowTopButton"
+               TargetType="Button"
+               BasedOn="{StaticResource WindowTopButton}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E81123"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <DataTemplate x:Key="HotelCardTemplate">
@@ -209,16 +254,16 @@
                     </StackPanel>
 
                     <Button Content="🔗 예약하기"
-        Style="{StaticResource YellowRoundButton}"
-        Margin="0,10,0,0"
-        Click="BtnBookStay_Click"/>
+                            Style="{StaticResource YellowRoundButton}"
+                            Margin="0,10,0,0"
+                            Click="BtnBookStay_Click"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
 
     </Window.Resources>
 
-    <Border Margin="10"
+    <Border Margin="8"
             Background="#F7F8FA"
             BorderBrush="#E0E0E0"
             BorderThickness="1"
@@ -227,12 +272,43 @@
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="34"/>
                 <RowDefinition Height="58"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-           
+            <!-- 커스텀 상단바 -->
+            <Grid Grid.Row="0"
+                  Background="White"
+                  MouseLeftButtonDown="CustomTitleBar_MouseLeftButtonDown">
+
+                <TextBlock Text="주변 숙소"
+                           VerticalAlignment="Center"
+                           Margin="14,0,0,0"
+                           FontSize="12"
+                           FontWeight="Bold"
+                           Foreground="#333333"/>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+
+                    <Button x:Name="BtnWindowMinimize"
+                            Content="─"
+                            Style="{StaticResource WindowTopButton}"
+                            Click="BtnWindowMinimize_Click"/>
+
+                    <Button x:Name="BtnWindowMaximize"
+                            Content="□"
+                            Style="{StaticResource WindowTopButton}"
+                            Click="BtnWindowMaximize_Click"/>
+
+                    <Button x:Name="BtnWindowClose"
+                            Content="✕"
+                            Style="{StaticResource CloseWindowTopButton}"
+                            Click="BtnWindowClose_Click"/>
+                </StackPanel>
+            </Grid>
+
             <!-- 상단 네비 -->
             <Border Grid.Row="1"
                     Background="White"
@@ -264,7 +340,7 @@
                             BorderThickness="1.5"
                             CornerRadius="20"
                             Padding="12,0"
-                            Margin="10,0,0,0">
+                            Margin="10,0,0,0" Grid.ColumnSpan="2" HorizontalAlignment="Left" Width="235">
                         <TextBlock x:Name="TxtOriginBadge"
                                    Text="🏔️ 관광지"
                                    FontSize="12"
@@ -280,7 +356,7 @@
                                FontWeight="ExtraBold"
                                Foreground="#222222"
                                VerticalAlignment="Center"
-                               Margin="12,0,0,0"/>
+                               Margin="119,0,0,0"/>
 
                     <StackPanel Grid.Column="3"
                                 Orientation="Horizontal"
@@ -291,9 +367,23 @@
                                    Foreground="#BBBBBB"
                                    VerticalAlignment="Center"
                                    Margin="0,0,6,0"/>
-                        <Button Content="거리순" Style="{StaticResource SortChipOnButton}" Margin="0,0,6,0"/>
-                        <Button Content="별점순" Style="{StaticResource SortChipButton}" Margin="0,0,6,0"/>
-                        <Button Content="가격순" Style="{StaticResource SortChipButton}"/>
+
+                        <Button x:Name="BtnSortDistance"
+        Content="거리순"
+        Style="{StaticResource SortChipOnButton}"
+        Margin="0,0,6,0"
+        Click="BtnSortDistance_Click"/>
+
+                        <Button x:Name="BtnSortRating"
+        Content="별점순"
+        Style="{StaticResource SortChipButton}"
+        Margin="0,0,6,0"
+        Click="BtnSortRating_Click"/>
+
+                        <Button x:Name="BtnSortPrice"
+        Content="가격순"
+        Style="{StaticResource SortChipButton}"
+        Click="BtnSortPrice_Click"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -301,7 +391,7 @@
             <!-- 메인 -->
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="340"/>
+                    <ColumnDefinition Width="0.34*" MinWidth="340" MaxWidth="480"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -322,7 +412,9 @@
                                        FontWeight="Bold"
                                        Foreground="#222222">
                                 <Run Text="주변 숙소 "/>
-                                <Run x:Name="TxtStayCount" Text="0" Foreground="#FFCC00"/>
+                                <Run x:Name="TxtStayCount"
+                                     Text="0"
+                                     Foreground="#FFCC00"/>
                                 <Run Text="개"/>
                             </TextBlock>
 
@@ -331,8 +423,6 @@
                                        FontSize="11"
                                        Foreground="#BBBBBB"
                                        Margin="0,3,0,0"/>
-
-                            
                         </StackPanel>
 
                         <ListBox x:Name="StayFullList"
@@ -345,10 +435,11 @@
                                  SelectionChanged="StayFullList_SelectionChanged"/>
                     </Grid>
                 </Border>
+
                 <!-- 오른쪽 카카오 지도 패널 -->
                 <Grid Grid.Column="1"
-      Background="#E8E0D0"
-      ClipToBounds="True">
+                      Background="#E8E0D0"
+                      ClipToBounds="True">
 
                     <wv2:WebView2 x:Name="StayMapWebView"/>
 
