@@ -8,10 +8,31 @@ namespace 코빚노_프로젝트
     public partial class LoginWindow : Window
     {
         public string LoginUserId { get; set; }
+        private LoginViewModel viewModel;
 
         public LoginWindow()
         {
             InitializeComponent();
+
+            viewModel = new LoginViewModel();
+            viewModel.LoginSuccess += ViewModel_LoginSuccess;
+
+            DataContext = viewModel;
+        }
+
+        private void TxtPw_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (viewModel != null)
+            {
+                viewModel.Password = TxtPw.Password;
+            }
+        }
+
+
+        private void ViewModel_LoginSuccess()
+        {
+            DialogResult = true;
+            Close();
         }
 
         private async void BtnDoLogin_Click(object sender, RoutedEventArgs e)
